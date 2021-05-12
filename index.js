@@ -6,6 +6,7 @@ const port = 3000;
 var productsRoutes = require('./routes/products.routes');
 var totalDiscountsRoutes = require('./routes/totalDiscounts.routes');
 var productDiscounts = require('./routes/productDiscounts.routes');
+var cart = require('./routes/cart.routes');
 
 app.use(bodyParser.json());
 app.use(
@@ -24,6 +25,7 @@ app.get("/", (request, response) => {
 app.use('/', productsRoutes);
 app.use('/', totalDiscountsRoutes);
 app.use('/', productDiscounts);
+app.use('/', cart);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`);

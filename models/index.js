@@ -22,5 +22,6 @@ db.sequelize = sequelize;
 db.products = require('./product')(sequelize, Sequelize);
 db.totalDiscount = require('./totalDiscount')(sequelize, Sequelize);
 db.productDiscount = require('./productDiscount')(sequelize, Sequelize);
+db.cart = require('./cart')(sequelize, Sequelize);
 
 module.exports = db;

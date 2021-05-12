@@ -1,5 +1,6 @@
 const db = require("../models");
 const ProductDiscount = db.productDiscount;
+const Product = db.products;
 const Op = db.Sequelize.Op;
 
 // Retrieve all ProductDiscount from the database.
@@ -32,11 +33,20 @@ exports.findOne = (req, res) => {
     });
 };
 
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
   // Validate request
   if (!req.body.product_id || !req.body.discount_count ||  !req.body.discount_price) {
     res.status(400).send({
       message: "product_id, discount_count and discount_price can not be empty!"
+    });
+    return;
+  }
+
+  // check cart already has the product
+  let product  = await Product.findByPk(req.body.product_id);
+  if(!product){
+    res.status(500).send({
+      message: "Error retrieving Product with id=" + req.body.product_id
     });
     return;
   }
