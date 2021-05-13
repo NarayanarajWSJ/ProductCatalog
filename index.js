@@ -30,7 +30,7 @@ app.use('/', totalDiscountsRoutes);
 app.use('/', productDiscounts);
 app.use('/', cart);
 
-app.listen(port, () => {
-  console.log(`App running on port ${port}. - ${process.env.NODE_ENV}`);
-});
+// app.listen(port, () => {
+//   console.log(`App running on port ${port}. - ${process.env.NODE_ENV}`);
+// });
 module.exports = app

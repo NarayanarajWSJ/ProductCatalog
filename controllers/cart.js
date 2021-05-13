@@ -119,7 +119,6 @@ exports.checkout = async (req, res) => {
   let total_price = _.sum(_.map(cart_items, 'total_price'));
   let product_discount_price = _.sum(_.map(cart_items, 'discount_price'));
 
-  console.log(total_discount.length); // 10
   let discount_amount = 0;
   if(total_discount && total_discount.length > 0){
     // Calculate the cart and return

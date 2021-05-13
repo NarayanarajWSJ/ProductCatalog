@@ -8,9 +8,9 @@ const ProductDiscount = db.productDiscount;
 const TotalDiscount = db.totalDiscount;
 describe('Test Products cart', () => {
    
-   describe('without Discount', () => {
+   describe('Cart Adding and Checkout cases', () => {
       let product1, product2;
-      beforeAll(async () => {
+      beforeEach(async () => {
          product1 = await Product.create({name: 'Product 1', price: 10.00,});
          product2 = await Product.create({name: 'Product 2', price: 12.00,});
       })
@@ -40,6 +40,8 @@ describe('Test Products cart', () => {
       })
       it('post Cart to add Existing item', async done => {
          // Do your async tests here
+         let cart = await Cart.create({product_id: product1.id, 
+            count: 3});
          const response = await request
          .post('/api/cart')
          .send({
@@ -52,15 +54,27 @@ describe('Test Products cart', () => {
       })
       it('Cart Get', async done => {
          // Do your async tests here
+         const response1 = await request
+         .post('/api/cart')
+         .send({
+            product_id: product1.id, 
+            count: 7
+         })
+         const response2 = await request
+         .post('/api/cart')
+         .send({
+            product_id: product2.id, 
+            count: 4
+         })
          const response = await request.get('/api/carts')
          expect(response.status).toBe(200)
          expect(response.body.length).toBe(2)
-         expect(response.body[0].count).toBe(4)
-         expect(response.body[0].discount_price).toBe(0)
-         expect(response.body[0].total_price).toBe(48)
-         expect(response.body[1].count).toBe(7)
+         expect(response.body[0].count).toBe(7)
+         expect(response.body[0].discount_price).toBe(20)
+         expect(response.body[0].total_price).toBe(50)
+         expect(response.body[1].count).toBe(4)
          expect(response.body[1].discount_price).toBe(0)
-         expect(response.body[1].total_price).toBe(70)
+         expect(response.body[1].total_price).toBe(48)
          done()
       })
       it('post Cart to add zero count item for product 2', async done => {
@@ -85,108 +99,131 @@ describe('Test Products cart', () => {
          expect(response.body.message).toBe('product count can not be Zero or Negative!')
          done()
       })
-      afterAll(async () => {
-         await Product.sync({ force: true });
-         await Cart.sync({ force: true });
-      });
-   })
-
-   describe('with Discount', () => {
-      let product1, productDiscount1,totalDiscount1,totalDiscount2;
-      beforeAll(async () => {
-         await Product.sync({ force: true });
-         await Cart.sync({ force: true });
-         await ProductDiscount.sync({ force: true });
-         await TotalDiscount.sync({ force: true });
-         product1 = await Product.create({name: 'Product 1', price: 10.00,});
+   
+      it('post Cart to add new item and check product discount is Applied for product 1', async done => {
+         // Do your async tests here
          productDiscount1 = await ProductDiscount.create({
             product_id: product1.id,
             discount_count: 5,
             discount_price: 30.00
          });
-      })
-      it('post Cart to add new item for product 1', async done => {
-         // Do your async tests here
-         const response = await request
+         const response1 = await request
          .post('/api/cart')
          .send({
             product_id: product1.id, 
-            count: 3
+            count: 8
          })
-         expect(response.status).toBe(201)
-         expect(response.body.message).toBe('New Items Added to the Cart')
-         done()
-      })
-      it('post Cart to add Existing item', async done => {
-         // Do your async tests here
-         const response = await request
-         .post('/api/cart')
-         .send({
-            product_id: product1.id, 
-            count: 4
-         })
-         expect(response.status).toBe(201)
-         expect(response.body.message).toBe('Existing Items Added to the Cart')
-         done()
-      })
-      it('Cart Get', async done => {
-         // Do your async tests here
          const response = await request.get('/api/carts')
          expect(response.status).toBe(200)
          expect(response.body.length).toBe(1)
-         expect(response.body[0].count).toBe(7)
+         expect(response.body[0].count).toBe(8)
          expect(response.body[0].discount_price).toBe(20)
-         expect(response.body[0].total_price).toBe(50)
+         expect(response.body[0].total_price).toBe(60)
          done()
       })
-      it('Get Total Discount without total discount', async done => {
+      it('Get Total Discount with total discount and product Discount', async done => {
          // Do your async tests here
-         const response = await request.post('/api/checkout')
-         expect(response.status).toBe(200)
-         expect(response.body.acutal_price).toBe(70)
-         expect(response.body.price).toBe(50)
-         expect(response.body.discounted_price).toBe(20)
-         expect(response.body.message).toBe('Discount applied')
-         done()
-      })
-      it('Get Total Discount with total discount', async done => {
-         // Do your async tests here
-         totalDiscount1 = await TotalDiscount.create({
-            price_above: 100,
-            price_below: 150,
-            discount_price: 10.00
+         productDiscount1 = await ProductDiscount.create({
+            product_id: product1.id,
+            discount_count: 5,
+            discount_price: 30.00
          });
-         const response = await request.post('/api/checkout')
-         expect(response.status).toBe(200)
-         expect(response.body.acutal_price).toBe(70)
-         expect(response.body.price).toBe(50)
-         expect(response.body.discounted_price).toBe(20)
-         expect(response.body.message).toBe('Discount applied')
-         done()
-      })
-      it('Get Total Discount with total discount', async done => {
-         // Do your async tests here
          totalDiscount2 = await TotalDiscount.create({
-            price_above: 20,
+            price_above: 50,
             price_below: 100,
             discount_price: 10.00
          });
+         const response1 = await request
+         .post('/api/cart')
+         .send({
+            product_id: product1.id, 
+            count: 8
+         })
          const response = await request.post('/api/checkout')
          expect(response.status).toBe(200)
-         // expect(response.body.cart_items).toBe(7)
-         expect(response.body.acutal_price).toBe(70)
-         expect(response.body.price).toBe(40)
+         expect(response.body.acutal_price).toBe(80)
+         expect(response.body.price).toBe(50)
          expect(response.body.discounted_price).toBe(30)
          expect(response.body.message).toBe('Discount applied')
+
+         await TotalDiscount.sync({ force: true });
          done()
       })
-      afterAll(async () => {
+      afterEach(async () => {
          await Product.sync({ force: true });
          await Cart.sync({ force: true });
-         await ProductDiscount.sync({ force: true });
-         await TotalDiscount.sync({ force: true });
       });
    })
+
+   // describe('with Discount', () => {
+   //    let product1, productDiscount1,totalDiscount1,totalDiscount2;
+   //    beforeEach(async () => {
+   //       product1 = await Product.create({name: 'Product 1', price: 10.00,});
+   //       productDiscount1 = await ProductDiscount.create({
+   //          product_id: product1.id,
+   //          discount_count: 5,
+   //          discount_price: 30.00
+   //       });
+   //    })
+   //    it('Cart Get', async done => {
+   //       // Do your async tests here
+   //       const response = await request.get('/api/carts')
+   //       expect(response.status).toBe(200)
+   //       expect(response.body.length).toBe(1)
+   //       expect(response.body[0].count).toBe(7)
+   //       expect(response.body[0].discount_price).toBe(20)
+   //       expect(response.body[0].total_price).toBe(50)
+   //       done()
+   //    })
+   //    it('Get Total Discount without total discount', async done => {
+   //       // Do your async tests here
+   //       const response = await request.post('/api/checkout')
+   //       expect(response.status).toBe(200)
+   //       expect(response.body.acutal_price).toBe(70)
+   //       expect(response.body.price).toBe(50)
+   //       expect(response.body.discounted_price).toBe(20)
+   //       expect(response.body.message).toBe('Discount applied')
+   //       done()
+   //    })
+   //    it('Get Total Discount with total discount', async done => {
+   //       // Do your async tests here
+   //       totalDiscount1 = await TotalDiscount.create({
+   //          price_above: 100,
+   //          price_below: 150,
+   //          discount_price: 10.00
+   //       });
+   //       const response = await request.post('/api/checkout')
+   //       expect(response.status).toBe(200)
+   //       expect(response.body.acutal_price).toBe(70)
+   //       expect(response.body.price).toBe(50)
+   //       expect(response.body.discounted_price).toBe(20)
+   //       expect(response.body.message).toBe('Discount applied')
+   //       done()
+   //    })
+   //    it('Get Total Discount with total discount', async done => {
+   //       // Do your async tests here
+   //       totalDiscount2 = await TotalDiscount.create({
+   //          price_above: 20,
+   //          price_below: 100,
+   //          discount_price: 10.00
+   //       });
+   //       const response = await request.post('/api/checkout')
+   //       expect(response.status).toBe(200)
+   //       // expect(response.body.cart_items).toBe(7)
+   //       expect(response.body.acutal_price).toBe(70)
+   //       expect(response.body.price).toBe(40)
+   //       expect(response.body.discounted_price).toBe(30)
+   //       expect(response.body.message).toBe('Discount applied')
+   //       done()
+   //    })
+   //    afterEach(async () => {
+   //       // await Product.sync({ force: true });
+   //       // await Cart.sync({ force: true });
+   //       // await ProductDiscount.sync({ force: true });
+   //       // await TotalDiscount.sync({ force: true });
+   //    });
+      
+   // })
 
 
  })
