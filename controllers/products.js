@@ -49,12 +49,11 @@ exports.create = (req, res) => {
   // Save Product in the database
   Products.create(product)
     .then(data => {
-      res.send(data);
+      res.status(201).send(data);
     })
     .catch(err => {
       res.status(500).send({
-        message:
-          err.message || "Some error occurred while creating the Product."
+        message: err.message || "Some error occurred while creating the Product."
       });
     });
 };

@@ -3,6 +3,9 @@ const bodyParser = require("body-parser");
 const app = express();
 const port = 3000;
 
+const dotenv = require('dotenv');
+dotenv.config();
+
 var productsRoutes = require('./routes/products.routes');
 var totalDiscountsRoutes = require('./routes/totalDiscounts.routes');
 var productDiscounts = require('./routes/productDiscounts.routes');
@@ -28,5 +31,6 @@ app.use('/', productDiscounts);
 app.use('/', cart);
 
 app.listen(port, () => {
-  console.log(`App running on port ${port}.`);
+  console.log(`App running on port ${port}. - ${process.env.NODE_ENV}`);
 });
+module.exports = app

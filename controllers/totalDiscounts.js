@@ -40,6 +40,12 @@ exports.create = (req, res) => {
     });
     return;
   }
+  if (req.body.price_above > req.body.price_below) {
+    res.status(400).send({
+      message: "price_above should be greater than price_below"
+    });
+    return;
+  }
   // Create a TotalDiscount
   const totalDiscount = {
     price_above: req.body.price_above,
@@ -50,7 +56,7 @@ exports.create = (req, res) => {
   // Save TotalDiscount in the database
   TotalDiscount.create(totalDiscount)
     .then(data => {
-      res.send(data);
+      res.status(201).send(data);
     })
     .catch(err => {
       res.status(500).send({

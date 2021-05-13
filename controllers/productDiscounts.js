@@ -13,8 +13,7 @@ exports.findAll = (req, res) => {
     })
     .catch(err => {
       res.status(500).send({
-        message:
-          err.message || "Some error occurred while retrieving ProductDiscount."
+        message: err.message || "Some error occurred while retrieving ProductDiscount."
       });
     });
 };
@@ -60,12 +59,11 @@ exports.create = async (req, res) => {
   // Save Productdiscount in the database
   ProductDiscount.create(productDiscount)
     .then(data => {
-      res.send(data);
+      res.status(201).send(data);
     })
     .catch(err => {
       res.status(500).send({
-        message:
-          err.message || "Some error occurred while creating the TotalDiscount."
+        message: err.message || "Some error occurred while creating the TotalDiscount."
       });
     });
 };
